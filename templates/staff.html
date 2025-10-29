@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFARI BYTES 🍔 - Staff Portal</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme staff-portal">
+    <!-- Flash Messages Container -->
+    <div id="flash-messages-container" role="alert" aria-live="polite"></div>
+
+    <div id="app">
+        <div id="login-page" class="page active">
+            <div class="login-container">
+                <h1>SAFARI BYTES 🍔</h1>
+                <h2>Staff Portal</h2>
+                
+                <!-- Login View -->
+                <div id="login-view">
+                    <form id="staff-login-form" aria-label="Staff Login Form">
+                        <input 
+                            type="email" 
+                            id="staff-email" 
+                            name="email"
+                            placeholder="Email" 
+                            aria-label="Email Address"
+                            autocomplete="email"
+                            required>
+                        <input 
+                            type="password" 
+                            id="staff-password" 
+                            name="password"
+                            placeholder="Password" 
+                            aria-label="Password"
+                            autocomplete="current-password"
+                            minlength="5"
+                            required>
+                        <button type="submit">Login</button>
+                    </form>
+                    <p><a href="#" onclick="showRegister()" role="button">Register as Staff</a></p>
+                    <p><a href="#" onclick="showForgotPassword()" role="button" style="color: #FF8C42;">Forgot Password?</a></p>
+                </div>
+                
+                <!-- Register View -->
+                <div id="register-view" style="display: none;">
+                    <form id="staff-register-form" aria-label="Staff Registration Form">
+                        <input 
+                            type="text" 
+                            id="reg-name" 
+                            name="fullname"
+                            placeholder="Full Name" 
+                            aria-label="Full Name"
+                            autocomplete="name"
+                            required>
+                        <input 
+                            type="email" 
+                            id="reg-email" 
+                            name="email"
+                            placeholder="Email" 
+                            aria-label="Email Address"
+                            autocomplete="email"
+                            required>
+                        <input 
+                            type="tel" 
+                            id="reg-phone" 
+                            name="phone"
+                            placeholder="Phone (0712345678)" 
+                            aria-label="Phone Number"
+                            autocomplete="tel"
+                            pattern="[0-9]{10}"
+                            required>
+                        <input 
+                            type="password" 
+                            id="reg-password" 
+                            name="password"
+                            placeholder="Password (min 5 characters)" 
+                            aria-label="Password"
+                            autocomplete="new-password"
+                            minlength="5"
+                            required>
+                        <button type="submit">Register</button>
+                    </form>
+                    <p><a href="#" onclick="showLogin()" role="button">Back to Login</a></p>
+                </div>
+                
+                <div id="error-message" class="error-message" role="alert" aria-live="assertive"></div>
+            </div>
+        </div>
+
+        <!-- Tracking Link Setup Page -->
+        <div id="tracking-link-page" class="page" style="display: none;">
+            <div class="container">
+                <h2>📍 Set Tracking Link</h2>
+                <p>Please paste your live tracking link below. This will be used by customers to track their orders.</p>
+                <form id="tracking-link-form" aria-label="Set Tracking Link Form">
+                    <textarea 
+                        id="tracking-link-input" 
+                        name="tracking-link"
+                        placeholder="Paste your tracking link here (e.g., Google Maps sharing link)" 
+                        aria-label="Tracking Link"
+                        rows="4" 
+                        required></textarea>
+                    <button type="submit">Save &amp; Continue</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page" style="display: none;">
+            <header class="app-header">
+                <h1>Staff Dashboard</h1>
+                <button class="logout-btn" onclick="logout()" aria-label="Logout">Logout</button>
+            </header>
+
+            <main class="container">
+                <!-- Statistics Section -->
+                <section class="stats-section" aria-labelledby="stats-heading">
+                    <h3 id="stats-heading">Today's Statistics</h3>
+                    <div class="stats-grid" id="staff-stats" role="list">
+                        <!-- Stats will be dynamically populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Available Orders Section -->
+                <section class="orders-section" aria-labelledby="available-orders-heading">
+                    <h3 id="available-orders-heading">Available Orders</h3>
+                    <div id="available-orders" role="list">
+                        <!-- Available orders will be dynamically populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- My Orders Section -->
+                <section class="orders-section" aria-labelledby="my-orders-heading">
+                    <h3 id="my-orders-heading">My Orders</h3>
+                    <div id="my-orders" role="list">
+                        <!-- Staff's claimed orders will be dynamically populated by JavaScript -->
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Order Detail & Profile Edit Modal -->
+        <div id="order-detail-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()" aria-label="Close Modal">&times;</span>
+                <div id="order-detail-content">
+                    <!-- Content will be dynamically populated by JavaScript -->
+                    <!-- Used for both order details and profile editing -->
+                    <!-- Order Details will include: -->
+                    <!--   - Order ID, Customer Info, Delivery Address -->
+                    <!--   - Order Items with Product Images (order-item-image class) -->
+                    <!--   - Payment and Delivery Status -->
+                    <!--   - Action buttons (Call, Payment, Delivery) -->
+                    <!-- Profile Edit will include: -->
+                    <!--   - Full Name, Email (disabled), Phone -->
+                    <!--   - Tracking Link -->
+                    <!--   - Save/Cancel buttons -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/static/js/staff.js"></script>
+</body>
+</html>

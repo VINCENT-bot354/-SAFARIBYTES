@@ -1,0 +1,599 @@
+
+
+
+
+MASTER DEVELOPER PROMPT — SAFARI BYTES 🍔 (FINAL)
+using python HTML CSS Js
+Project summary (short):
+Build a production-ready, mobile-first Progressive Web App (PWA) called SAFARI BYTES 🍔 with three portals: Admin, Staff, and Customer. Default dark theme. Everything must be fully implemented — no “coming soon” placeholders. Use Python (backend) + HTML/CSS/JavaScript frontend. Dockerized; PostgreSQL. All secrets/API endpoints in environment variables unless explicitly stored in the database as noted.
+
+
+
+1 — ADMIN PANEL (show every feature first)
+
+1.1 Access & bootstrap
+
+Admin portal protected by an Admin Panel password (single admin panel account once one account is created there is no possibility of creating another account but all credentials can be changed while logged in).
+
+Admin email and admin password are stored in the database (not env).
+
+First-run / bootstrap behavior:
+
+If no admin email/password exists, the portal page login succeeds and the user inside sets admin email and admin password.
+
+There is also a Panels Page password/email used to protect the portal selector page (see Portal Page rules). Those credentials are stored in DB as well and editable later.
+
+1.2 Admin dashboard (single-pane overview)
+
+Live orders feed (real-time).
+
+Mini totals table (one-row) at the top with columns:
+
+Total Product Sales (KSH) | Total Delivery Fees (KSH) | Total Revenue (KSH) | Total Capital (KSH) | Total Profit (KSH)
+
+Totals update live.
+
+Totals row is followed by the detailed Orders Table (per-order rows — see orders below).
+
+1.3 Orders & transactions
+
+Orders table columns:
+
+Order ID, Customer Name, Product(s), Product Price, Delivery Fee, Total Paid, Payment Method, Delivery Staff, Date/Time, Status Badge.
+
+Payment status badges: Pending Payment, Payment In Progress, Payment Complete, Out for Delivery, Customer Tracking Active, Delivered, Payment Failed.
+
+Admin sees real-time STK Push in-progress, failures, and successes.
+
+Admin can mark cash payments as Paid (if staff reports cash collected).
+
+Admin can filter/export the order list (CSV, Excel, PDF).
+
+1.4 Statistics & reporting
+
+Full analytics: hourly/daily/weekly/monthly/yearly + per-second live feed when system load allows.
+
+Charts & numerical tables; admin can print/export graphs & data.
+
+Business Report (PDF) generation: cover, TOC, executive summary, cash flow, sales analysis, points summary, employee performance, closing page. Saved to storage bucket and downloadable.
+
+1.5 Capital ledger (no deletes)
+
+Admin clicks ➕ Add Capital Entry:
+
+Amount (KES), Purpose/Description.
+
+Entry is added to Capital Ledger Table with timestamp.
+
+Admin can edit an entry (amount or description). Edits show a small “(edited)” tag.
+
+Admin cannot delete entries; can set amount to 0 to nullify.
+
+Total Capital = sum of ledger entries. Profit = Total Revenue − Total Capital. Shown only in totals row.
+
+1.6 Products / Menu management
+
+Add / Edit / Delete products.
+
+Fields per product:
+
+image_url (validated by HEAD request and MIME type image/*)
+
+name
+
+description
+
+price_now (current)
+
+price_old (optional)
+
+stock (enter a numeric value OR type a word like "in bulk")
+
+category
+
+cost_of_goods (optional, for internal profit calc but not shown per-row)
+
+is_combo boolean + combo_items list
+
+Deleting a product is allowed (nullable behavior).
+
+Edits update live and are audited.
+
+1.7 Admin toggles & settings
+
+Toggles (persisted in DB):
+
+allow_email_signin (true/false).
+
+allow_pay_on_delivery (true/false).
+
+splash_enabled / adverts_enabled / advert_frequency.
+
+min_delivery_fee, delivery_per_km_rate, convenience_fee_rules, transaction_fee_rules.
+
+username_change_limit (default 2 per 3 days).
+
+staff_portal_password (hashed) — separate from admin password, used to gate staff portal access from the portal selector.
+
+terms_mandatory (true).
+
+Customer Care Number: admin sets the phone number that the “Call Customer Care” button dials. Stored in DB.
+
+Social links: admin can add many social media links (optional). If set, they show in customer service area; otherwise hidden.
+
+Backup settings: admin chooses backup interval (manual, daily, weekly, monthly, yearly). Backups are emailed to admin email.
+
+1.8 Staff approvals
+
+View pending staff registrations and approve or reject.
+
+On staff registration, admin receives email notification (SendGrid).
+
+On approval/rejection, staff receives email (SendGrid).
+
+1.9 Terms & Conditions
+
+Admin can update Terms & Conditions text.
+
+On update:
+
+System auto-generates a PDF copy of the new T&C with timestamp.
+
+Customers see a banner: “Terms & Conditions updated on [date]” that remains visible for 1 week (7 days).
+
+The Terms page displays the new T&C text and a “Download previous Terms & Conditions” button to download the prior version(s).
+
+1.10 Backups
+
+Admin sets auto-backup schedule and can trigger manual backup.
+
+Backup output: PDF (default), optionally CSV exports for data tables.
+
+After each backup, the file is emailed to admin email automatically.
+
+Admin panel has a Backup History list (date, file link, email status). Admin can set the retention policy for stored backups (e.g., keep last 3) — recommended but optional.
+
+
+
+2 — STAFF PANEL (ordered flow & details next)
+
+2.1 Registration & approval
+
+Staff register with email, password, phone. They see: “Registration successful — pending admin approval.”
+
+They cannot log in until admin approves.
+
+2.2 Login
+
+WebAuthn biometric preferred; fallback to admin-set PIN.
+
+After approval, staff can log in.
+
+2.3 Orders list & claiming
+
+Staff sees all incoming orders in a list (real-time).
+
+Any staff may click Accept Order:
+
+That order becomes assigned to that staff member. make sure there is no possible glitch like claiming twice once cleaned the claim button changes to unclaim
+
+The order is no longer claimable by others unless staff unclaims
+
+2.4 Live-tracking workflow (no Google Maps API)
+
+upon login staff pastes a live link in a dedicated section that link will be used to help customers track their orders. upon logout the link is deleted after exactly 5 minutes of being logged out.
+
+staff are required to paste the link once per login that is mandatory thing in fact it could open a specific window after login for that, and only after saving that link are they actually directed to the rest of the page
+AFTER ORDER FLOW
+Staff accepts order →
+The system automatically extracts the first https://... substring of the link the staff and pasted , keeps only the link, and stores it.
+
+On the customer side, Track My Order opens the link in a new browser tab.
+2.5 Calling customers
+
+Only staff can call customers.
+
+In order details staff clicks Call → a modal asks: “WhatsApp call or Normal Call?”
+
+WhatsApp: opens https://wa.me/ (number formatted as 2547XXXXXXXX, no +).
+
+Normal: opens tel: on device.
+
+If customer’s stored number is not in required format, staff is prompted to edit/confirm.
+
+2.6 Payment & delivery
+
+If order was not paid at checkout:
+
+Staff clicks Request Payment to initiate M-Pesa STK Push (PayHero) to the customer’s number.
+
+After successful payment (STK callback), system marks Paid.
+
+Alternatively, staff can receive cash and click Mark as Paid (Cash).
+
+Once product is handed over, staff MUST click Confirm Product Delivered.
+
+Only after this click does the system archive the order and remove the live tracking link from active views.
+
+Staff can mark Paid (cash) before or after Confirm Delivered; but Confirm Delivered is required to finalize.
+
+2.7 Simplified staff analytics
+
+Staff view counts and totals (no charts):
+
+Today's deliveries, Completed orders, Pending orders, Cash vs M-Pesa counts, personal deliveries done.
+
+
+
+3 — CUSTOMER PANEL (final & exhaustive)
+
+3.1 Entry & routing
+
+The default public homepage loads the Food Menu Dashboard (Jumia-style). No portal selector required to reach it.
+
+Portal selector page (three cards: Customer / Staff / Admin) is a separate route guarded by its panels-page credentials (DB stored).
+
+3.2 Catalog & products
+
+Products displayed in grid with:
+
+image (via image_url), name, description, price_now, optional price_old, stock (numeric or text like "in bulk"), availability badge.
+
+Image URL must be validated on add (HEAD, MIME image/*). Admin enters image via URL only.
+
+3.3 Cart behavior
+
+
+adds one more of same product; - decrements.
+
+
+
+First + shows a pinned bottom cart bar (non-scrollable). Clicking it opens full cart overlay (internal scroll).
+
+Cart persists in local storage across pages and for up to 5 hours after logout; afterwards it clears.
+
+If customer logs in after building cart while logged out, cart merges into their account cart server-side.
+
+3.4 Account / My Account
+
+The account icon opens a full-screen account page (not a tiny modal; seamless transition).
+
+Account actions: Register, Login, Edit username, Edit password, Edit phone.
+
+Username may be changed max 2 times within any 3-day rolling window (warning after first change).
+
+Phone change requires verification OTP via email flow (SendGrid) and formatting normalization.
+
+3.5 Checkout & address
+
+Checkout requires:
+
+Name, Phone (editable), Delivery location (two options):
+
+Use device location (permission requested).
+
+Pin location (manual pin).
+
+System records which method used in order metadata.
+
+Phone normalization rules:
+
+Accept 0XXXXXXXXX, 254XXXXXXXXX, +254XXXXXXXXX.
+
+Save and transform for API calls:
+
+For PayHero STK Push: use 254XXXXXXXXX (no +).
+
+For wa.me link (staff call), use 254XXXXXXXXX.
+
+If number begins with 0, convert to 254 (drop leading zero). E.g., 0712345678 → 254712345678.
+0123456789 ➡️ 254123456789
+If input cannot be normalized to Kenyan format, reject with a clear message.
+
+3.6 Payment choice UI
+
+Customer sees simple labels: “Pay Now” or “Pay on Delivery” (only if admin enabled Pay on Delivery).
+
+If Pay Now selected:
+
+The system triggers PayHero STK Push using PAYHERO_STK_PUSH_ENDPOINT with JSON body that includes provider from env (exact value: "m-pesa"), phone_number (254...), amount, reference, channel_id, callback_url.
+
+Header must include Authorization: Basic <PAYHERO_BASIC_AUTH_TOKEN>.
+
+Only on successful PayHero callback does system mark order paid.
+
+If Pay on Delivery:
+
+Order is placed and marked unpaid. Staff will collect cash or request STK push at delivery.
+
+3.7 Order numbering
+
+Order ID format: {YYYY}{encodedMonthDayTime}{4randomLower} — human-readable unique code.
+
+Example generation: 2025OC12dbfw (2025 + OC12 + dbfw) — produce similar readable yet unique IDs.
+
+3.8 Order status updates & inbox
+
+Automatic inbox messages (sent via SendGrid emails and stored in in-app notifications):
+
+On order placement: “Your order received — pending delivery.”
+
+On staff accept: “Your order is on the way.”
+
+On delivery confirmed: “Your order has been delivered.”
+
+Notifications also appear in in-app Inbox.
+
+Customers cannot initiate calls to staff (only receive). They can call Customer Care via configured phone number (see below).
+
+3.9 Track My Order
+
+The "Track My Order" button appears only after staff pastes live tracking link.
+
+Clicking opens an embedded iframe showing the staff’s provided link (iframe min height >= 50% of phone screen).
+
+Iframe refresh logic or reload button available for live updates.
+
+3.10 Customer Support
+
+Customer Support page in customer panel with Call Customer Care only.
+
+Clicking dials the admin-set Customer Care Number (tel:).
+
+Admin enters this number in Admin Panel (DB stored).
+
+3.11 Terms & Conditions
+
+Customer must check a box: “I have read and agree to Terms & Conditions” to register.
+
+Terms page always accessible.
+
+When admin updates T&C:
+
+New T&C is displayed on screen and made available as PDF download of the previous ones via “Download previous Terms & Conditions.”
+
+A banner shows: “Terms & Conditions were updated on [date]” and remains for 7 days.
+
+
+
+4 — PHONE FORMATTING & API EXPECTATIONS (explicit)
+
+4.1 Phone normalization (always apply before storage or any API call)
+
+Accept input in these forms:
+
+0XXXXXXXXX → convert to 254XXXXXXXXX (drop leading 0, no +).
+
+254XXXXXXXXX → accept.
+
++2547XXXXXXXX → remove + for PayHero; store canonical form 254XXXXXXXXX.
+
+Storage canonical form: 254XXXXXXXXX (no +) for internal storage & PayHero calls.
+
+For wa.me links and tel links: use 254XXXXXXXXX (no plus) when building wa.me/254.... or tel:+254.... (tel can include + if desired; ensure consistent behavior).
+
+PayHero expects phone_number as 254XXXXXXXXX (no +) — always send numbers in that format to PayHero.
+
+4.2 PayHero STK Push exact expectations
+
+Environment variables for PayHero must include:
+
+PAYHERO_STK_PUSH_ENDPOINT (full URL)
+
+PAYHERO_BASIC_AUTH_TOKEN (value is the base64 token — you will prefix with Basic  in header)
+
+PAYHERO_CHANNEL_ID
+
+PAYHERO_PROVIDER (value exact: "m-pesa", lowercase with hyphen)
+
+WEBSITE_URL (used to form callback_url = WEBSITE_URL + PAYHERO_CALLBACK_PATH)
+
+Header: Authorization: Basic <PAYHERO_BASIC_AUTH_TOKEN> (literal word Basic + space + token).
+
+Request Body JSON must include:
+
+provider: from env, "m-pesa"
+
+phone_number: 254XXXXXXXXX (no +)
+
+amount: integer (KES)
+
+reference: unique order reference
+
+channel_id: env variable
+
+callback_url: composed from WEBSITE_URL and callback path env/DB
+
+System must implement idempotency and webhook verification.
+
+
+
+5 — CALLING RULES (final)
+
+5.1 Who can call
+
+Staff can call customers (only).
+
+Customers cannot call staff (unless calling Customer Care).
+
+5.2 Call modal on staff side
+
+Presents two buttons:
+
+WhatsApp → opens https://wa.me/2547XXXXXXXX (number no +; admin must have saved WhatsApp contact details in DB if you wish to show WhatsApp option).
+
+Normal Call → opens tel:+254XXXXXXXXX or tel:254XXXXXXXXX depending on platform norm.
+
+If WhatsApp option not present or admin opted to hide, only Normal Call shown.
+
+5.3 Customer Care
+
+Admin adds Customer Care phone number in Admin Panel (DB). Customers clicking “Call Customer Care” dial that number directly.
+
+
+
+6 — UI / NAVIGATION RULES (explicit)
+
+6.1 Back arrow
+
+A back arrow appears on every navigable screen except:
+
+The homepage (food menu dashboard).
+
+The portal selector page.
+
+The back arrow must return the user to the immediate previous view.
+
+6.2 Account page
+
+Clicking the person icon opens a full account page (seamless overlay or full-page view) — not a tiny modal.
+
+6.3 + / - behavior
+
+
+increments quantity for that product and updates cart.
+
+
+
+
+decrements and removes when 0.
+
+
+
+6.4 Cart persistence
+
+Cart persists server-side once user logs in; for logged out users it persists in browser, but clears 5 hours after logout.
+
+6.5 UI sizing for embedded map
+
+On phone: iframe must take ≥ 50% of viewport height.
+
+On desktop: iframe appears side panel or resizable area.
+
+
+
+7 — DATA & STORAGE RULES
+
+7.1 Images
+
+Images are by URL only; server validates and optionally caches/resizes.
+
+7.2 Social & Contact info
+
+Admin may add many social links stored in DB.
+
+Customer service area displays only those links that exist.
+
+A message appears: “For direct assistance please use our official channels: call or WhatsApp.” (WhatsApp used only as redirect; emails used for notifications.)
+
+7.3 Audit logs
+
+Log: product changes, price changes, approvals, staff assignments, payment confirmations, capital entry edits (with “edited” flag).
+
+
+
+8 — BACKUPS & TIME
+
+8.1 Timezone
+
+Default: Africa/Nairobi (GMT+3).
+
+Admin may choose to set timezone explicitly or set current time; system will use the admin-set timezone for all timestamps.
+
+8.2 Backups
+
+Admin chooses backup interval: manual, daily, weekly, monthly, yearly.
+
+Backup generated as PDF (and optionally CSV sections).
+
+Backup emailed to admin email and listed in Backup History.
+
+Option to keep N last backups (configurable in Admin).
+
+
+
+9 — ENVIRONMENT VARIABLES (only these — everything else is DB-driven)
+
+IMPORTANT: put secrets and fixed API endpoints in env — phone numbers, social links, admin email, and similar user-editable items are stored in DB as configured.
+
+WEBSITE_URL — base domain used to construct callback URLs. (required)
+
+PAYHERO_STK_PUSH_ENDPOINT — full endpoint URL for STK Push. (required)
+
+PAYHERO_BASIC_AUTH_TOKEN — Base64 credentials token (store just the token; code will send header Authorization: Basic ). (required)
+
+PAYHERO_CHANNEL_ID — channel id for PayHero. (required)
+
+PAYHERO_PROVIDER — exact value: m-pesa. (required)
+
+PAYHERO_CALLBACK_PATH — path appended to WEBSITE_URL for callbacks (e.g., /api/callbacks/payhero/stk). (required)
+
+SENDGRID_API_KEY — SendGrid API key for email notifications & backups. (required)
+
+SENDGRID_SENDER_EMAIL — The verified sender email address. (required)
+
+DATABASE_URL — Postgres connection string. (required)
+
+JWT_SECRET — for tokens. (required)
+
+PDF_STORAGE_BUCKET — bucket or path to store generated PDFs. (required)
+
+Do not place Customer Care number, admin email, social links, staff portal password in env — those are set in Admin Panel
+
+
+
+10 — ACCEPTANCE CRITERIA (end-to-end checks)
+
+10.1 All panels (Admin, Staff, Customer) exist and fully function as described.
+10.2 Admin can create/update/delete products with image URL and stock number or text like "in bulk".
+10.3 Cart behavior: pinned bottom bar, aggregation, persistence, 5-hour expiry after logout.
+10.4 Checkout: phone normalization (0→254), address method recorded (gps vs pin), delivery fee calculation (per-km * rate, min fee), Pay on Delivery toggle respected.
+10.5 PayHero STK Push invoked with provider = "m-pesa", phone_number = 254... (no +), channel_id, callback_url; header Authorization: Basic . Order set Paid only after webhook confirms or staff marks paid cash.
+10.6 Staff flow: accept order, paste live tracking link, customer track iframe embed appears; staff may initiate payment (STK) or mark as cash paid. Staff calls customer via WhatsApp redirect or tel.
+10.7 Confirm Product Delivered must be clicked to archive order and remove tracking link (regardless of payment state).
+10.8 Capital ledger works (add, edit to zero allowed, no delete). Totals mini-table displays totals row only for capital & profit.
+10.9 Terms & Conditions update generates PDF and displays new T&C to customers with banner lasting 7 days; previous versions downloadable.
+10.10 Backups scheduled by admin run and are emailed to admin. Backup history is visible.
+10.11 Timezone uses Africa/Nairobi by default or admin-set timezone.
+10.12 All sensitive tokens/endpoints in env as listed; all other changeable data in DB.
+10.13 No “coming soon” or placeholder elements in UI — everything is implemented.
+
+
+
+11 — DELIVERABLES
+
+Git repo with demo and production branches.
+
+.env.example with all env names listed (no values).
+
+README with setup, env, migrations, seeding (10 products, 3 customers, 2 staff, 1 admin bootstrap).
+
+Postgres schema & migrations.
+
+API docs (OpenAPI/Swagger).
+
+Admin & Staff manuals (how to approve staff, add capital, run backups).
+
+Unit tests (auth, payment/webhook, order lifecycle), integration tests (STK push & SendGrid), and E2E tests for core flows.
+
+
+
+Final notes for implementer (do exactly as written)
+
+Embed Google Maps short links in iframe as-is — extract the first http(s) substring from staff input and load in iframe. Ensure iframe sizing rules for mobile/desktop.
+
+Normalize phone numbers before any external API use. For PayHero, send without +. For wa.me redirect, use the same numeric format without +.
+
+Always prefix Basic Auth header literally with the word Basic  and the token value from env.
+
+Keep admin-editable values in DB; only API secrets and endpoints in env.
+
+Ensure robust logging and error handling for all external API calls and all operations no matter how small.
+
+No features are to be left partially implemented. Everything must be testable and fully implemented 100% functional.
+avoid even the slightest of error like omitting buttons that redirect to a page or forgetting to implement are UI for specific route.
+you must not pause anywhere to ask me for any permission to continue, go until you complete all the tasks, literally all the tasks until the app is 100% fully functional ready for deployment.
+after you are through tell me the route that takes me to portals page
+
+---
+

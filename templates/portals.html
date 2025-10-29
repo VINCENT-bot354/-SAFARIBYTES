@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFARI BYTES 🍔 - Portal Selection</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <div id="portal-login" class="portal-login">
+        <div class="login-card">
+            <h2>🔐 Portal Access</h2>
+            <p>Please log in to access the portals</p>
+            <form id="portal-login-form">
+                <input type="email" id="portal-email" placeholder="Email" required>
+                <input type="password" id="portal-password" placeholder="Password" required>
+                <button type="submit">Access Portals</button>
+            </form>
+            <div id="portal-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="portal-selector" class="portal-selector" style="display: none;">
+        <div class="container">
+            <h1 class="main-title">SAFARI BYTES 🍔</h1>
+            <p class="subtitle">Select Your Portal</p>
+            
+            <div class="portal-cards">
+                <div class="portal-card" onclick="window.location.href='/'">
+                    <div class="portal-icon">🍔</div>
+                    <h2>Customer</h2>
+                    <p>Browse menu and order food</p>
+                </div>
+                
+                <div class="portal-card" onclick="window.location.href='/staff'">
+                    <div class="portal-icon">🚴</div>
+                    <h2>Staff</h2>
+                    <p>Manage deliveries</p>
+                </div>
+                
+                <div class="portal-card" onclick="window.location.href='/admin'">
+                    <div class="portal-icon">⚙️</div>
+                    <h2>Admin</h2>
+                    <p>System management</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('portal-login-form');
+        const errorDiv = document.getElementById('portal-error');
+        const loginSection = document.getElementById('portal-login');
+        const selectorSection = document.getElementById('portal-selector');
+
+        if (localStorage.getItem('portal_access')) {
+            loginSection.style.display = 'none';
+            selectorSection.style.display = 'block';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('portal-email').value;
+            const password = document.getElementById('portal-password').value;
+            
+            try {
+                const response = await fetch('/api/portals/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('portal_access', 'true');
+                    loginSection.style.display = 'none';
+                    selectorSection.style.display = 'block';
+                } else {
+                    errorDiv.textContent = data.message || 'Invalid credentials';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Connection error. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>

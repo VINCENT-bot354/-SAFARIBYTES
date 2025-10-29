@@ -1,0 +1,17 @@
+Pasted-self-handle-dbapi-exception-File-home-runner-workspace-pythonlibs-lib-python3-11-site-packag-1761632057888_1761632057890.txt
+self._handle_dbapi_exception(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column system_settings.website_title does not exist
+LINE 1: SELECT system_settings.id AS system_settings_id, system_sett...
+                                                         ^
+
+[SQL: SELECT system_settings.id AS system_settings_id, system_settings.website_title AS system_settings_website_title, system_settings.allow_email_signin AS system_settings_allow_email_signin, system_settings.allow_pay_on_delivery AS system_settings_allow_pay_on_delivery, system_settings.splash_enabled AS system_settings_splash_enabled, system_settings.adverts_enabled AS system_settings_adverts_enabled, system_settings.advert_frequency AS system_settings_advert_frequency, system_settings.min_delivery_fee AS system_settings_min_delivery_fee, system_settings.delivery_per_km_rate AS system_settings_delivery_per_km_rate, system_settings.convenience_fee AS system_settings_convenience_fee, system_settings.transaction_fee_percentage AS system_settings_transaction_fee_percentage, system_settings.username_change_limit AS system_settings_username_change_limit, system_settings.username_change_window_days AS system_settings_username_change_window_days, system_settings.staff_portal_password_hash AS system_settings_staff_portal_password_hash, system_settings.terms_mandatory AS system_settings_terms_mandatory, system_settings.customer_care_number AS system_settings_customer_care_number, system_settings.backup_interval AS system_settings_backup_interval, system_settings.backup_retention AS system_settings_backup_retention, system_settings.timezone AS system_settings_timezone, system_settings.created_at AS system_settings_created_at, system_settings.updated_at AS system_settings_updated_at 
+FROM system_settings 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFARI BYTES 🍔 - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff8c00, #ff6600);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 400px;
+            font-weight: 500;
+        }
+        .flash-message.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        .flash-message.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        .flash-message.hiding {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .chart-container h3 {
+            margin-top: 0;
+            color: #ff8c00;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        .chart-container canvas {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body class="dark-theme admin-portal">
+    <div id="flash-messages-container"></div>
+    
+    <div id="app">
+        <div id="login-page" class="page active">
+            <div class="login-container">
+                <h1>SAFARI BYTES 🍔</h1>
+                <h2>Admin Panel</h2>
+                
+                <div id="bootstrap-view">
+                    <p>First time setup - Create admin credentials</p>
+                    <form id="admin-bootstrap-form">
+                        <input type="email" id="bootstrap-email" placeholder="Admin Email" required>
+                        <input type="password" id="bootstrap-password" placeholder="Admin Password" required>
+                        <button type="submit">Create Admin Account</button>
+                    </form>
+                </div>
+                
+                <div id="login-view" style="display: none;">
+                    <form id="admin-login-form">
+                        <input type="email" id="admin-email" placeholder="Email" required>
+                        <input type="password" id="admin-password" placeholder="Password" required minlength="5">
+                        <button type="submit">Login</button>
+                    </form>
+                    <p><a href="#" onclick="showAdminForgotPassword()" style="color: #FF8C42;">Forgot Password?</a></p>
+                </div>
+                
+                <div id="error-message" class="error-message"></div>
+            </div>
+        </div>
+
+        <div id="dashboard-page" class="page" style="display: none;">
+            <header class="app-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <h1>Admin Dashboard</h1>
+                    <button class="menu-toggle" id="menu-toggle" onclick="toggleAdminMenu()">☰</button>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </header>
+            
+            <nav class="admin-nav-dropdown" id="admin-nav-dropdown">
+                <button onclick="showSection('dashboard'); closeAdminMenu();">Dashboard</button>
+                <button onclick="showSection('orders'); closeAdminMenu();">Orders</button>
+                <button onclick="showSection('products'); closeAdminMenu();">Products</button>
+                <button onclick="showSection('capital'); closeAdminMenu();">Capital</button>
+                <button onclick="showSection('staff'); closeAdminMenu();">Staff</button>
+                <button onclick="showSection('settings'); closeAdminMenu();">Settings</button>
+                <button onclick="showSection('terms'); closeAdminMenu();">Terms</button>
+                <button onclick="showSection('backup'); closeAdminMenu();">Backup</button>
+            </nav>
+
+            <div id="dashboard-section" class="section active">
+                <h2>Dashboard Overview</h2>
+                <div class="totals-table" id="totals-table"></div>
+                
+                <h2 style="margin-top: 32px;">Analytics</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>📈 Orders Per Day (Last 30 Days)</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>💰 Revenue vs Capital vs Profit</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>💳 Payment Methods Distribution</h3>
+                        <canvas id="paymentMethodsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>📦 Orders Status Distribution</h3>
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="orders-section" class="section">
+                <h2>Recent Orders</h2>
+                <button onclick="exportOrders('csv')">Export CSV</button>
+                <button onclick="exportOrders('pdf')">Export PDF</button>
+                <table id="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Products</th>
+                            <th>Amount</th>
+                            <th>Delivery Fee</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Staff</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div id="products-section" class="section">
+                <h2>Products Management</h2>
+                <button class="btn-primary" onclick="showAddProduct()">➕ Add Product</button>
+                <div id="products-list"></div>
+            </div>
+
+            <div id="capital-section" class="section">
+                <h2>Capital Ledger</h2>
+                <button class="btn-primary" onclick="showAddCapital()">➕ Add Capital Entry</button>
+                <div id="capital-total"></div>
+                <table id="capital-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div id="staff-section" class="section">
+                <h2>Staff Management</h2>
+                <h3>Pending Approvals</h3>
+                <div id="pending-staff"></div>
+            </div>
+
+            <div id="settings-section" class="section">
+                <h2>System Settings</h2>
+                <form id="settings-form">
+                    <label>
+                        <input type="checkbox" id="allow-email-signin"> Allow Email Sign-in
+                    </label>
+                    <label>
+                        <input type="checkbox" id="allow-pay-on-delivery"> Allow Pay on Delivery
+                    </label>
+                    <label>
+                        <input type="checkbox" id="splash-enabled"> Enable Splash Screen
+                    </label>
+                    <label>
+                        <input type="checkbox" id="adverts-enabled"> Enable Advertisements
+                    </label>
+                    <label>
+                        Min Delivery Fee (KES):
+                        <input type="number" id="min-delivery-fee" step="0.01">
+                    </label>
+                    <label>
+                        Delivery Per KM Rate (KES):
+                        <input type="number" id="delivery-per-km-rate" step="0.01">
+                    </label>
+                    <label>
+                        Customer Care Number:
+                        <input type="tel" id="customer-care-number">
+                    </label>
+                    <button type="submit">Save Settings</button>
+                </form>
+                <h3>Social Links</h3>
+                <button onclick="addSocialLink()">➕ Add Social Link</button>
+                <div id="social-links-list"></div>
+            </div>
+
+            <div id="terms-section" class="section">
+                <h2>Terms & Conditions</h2>
+                <textarea id="terms-content" rows="15"></textarea>
+                <button onclick="updateTerms()">Update Terms & Conditions</button>
+            </div>
+
+            <div id="backup-section" class="section">
+                <h2>Backup Management</h2>
+                <div class="backup-controls">
+                    <select id="backup-interval">
+                        <option value="manual">Manual Only</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                    <button onclick="saveBackupSettings()">Save Schedule</button>
+                    <button onclick="createBackup()">Create Backup Now</button>
+                </div>
+                <h3>Backup History</h3>
+                <div id="backup-history"></div>
+            </div>
+        </div>
+
+        <div id="product-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3 id="modal-title">Add Product</h3>
+                <form id="product-form">
+                    <input type="text" id="product-image-url" placeholder="Image URL" required>
+                    <input type="text" id="product-name" placeholder="Product Name" required>
+                    <textarea id="product-description" placeholder="Description"></textarea>
+                    <input type="number" id="product-price-now" placeholder="Current Price" step="0.01" required>
+                    <input type="number" id="product-price-old" placeholder="Old Price (optional)" step="0.01">
+                    <input type="text" id="product-stock" placeholder="Stock (number or text like 'in bulk')">
+                    <input type="text" id="product-category" placeholder="Category" required>
+                    <input type="number" id="product-cost" placeholder="Cost of Goods (optional)" step="0.01">
+                    <label>
+                        <input type="checkbox" id="product-is-combo"> Is Combo
+                    </label>
+                    <button type="submit">Save Product</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="capital-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3 id="capital-modal-title">Add Capital Entry</h3>
+                <form id="capital-form">
+                    <input type="hidden" id="capital-id">
+                    <input type="number" id="capital-amount" placeholder="Amount (KES)" step="0.01" required>
+                    <textarea id="capital-purpose" placeholder="Purpose/Description" required></textarea>
+                    <button type="submit">Save Entry</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="social-link-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3 id="social-link-modal-title">Add Social Link</h3>
+                <form id="social-link-form">
+                    <input type="hidden" id="social-link-id">
+                    <select id="social-platform" required>
+                        <option value="">Select Platform</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="TikTok">TikTok</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="Twitter">Twitter</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="social-username" placeholder="Username/Handle" required>
+                    <input type="url" id="social-url" placeholder="Full URL" required>
+                    <label>
+                        <input type="checkbox" id="social-is-primary"> Primary Link
+                    </label>
+                    <button type="submit">Save Link</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

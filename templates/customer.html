@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFARI BYTES 🍔 - Order Food</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#1a1a1a">
+</head>
+<body class="dark-theme customer-portal">
+    <div id="app">
+        <!-- Flash Message Container -->
+        <div id="flash-container" class="flash-messages"></div>
+
+        <header class="app-header">
+            <button class="back-btn" id="back-btn" style="display: none;">←</button>
+            <h1>SAFARI BYTES 🍔</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button class="cart-btn" id="cart-btn" onclick="showCart()" style="display: none;">
+                    <span class="cart-icon-header">
+                        🛒
+                        <span class="cart-icon-badge" id="header-cart-badge">0</span>
+                    </span>
+                </button>
+                <button class="account-btn" id="account-btn">👤</button>
+            </div>
+        </header>
+
+        <div id="menu-page" class="page active">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search menu...">
+            </div>
+
+            <div class="category-filter" id="category-filter"></div>
+
+            <div class="products-grid" id="products-grid"></div>
+        </div>
+
+        <div id="account-page" class="page account-page">
+            <div id="logged-out-view">
+                <h2>My Account</h2>
+                <div class="account-actions">
+                    <button class="btn-primary" onclick="showLogin()">Login</button>
+                    <button class="btn-secondary" onclick="showRegister()">Register</button>
+                </div>
+            </div>
+
+            <div id="logged-in-view" style="display: none;">
+                <h2>My Account</h2>
+                <div id="account-info" class="profile-view"></div>
+                <div class="account-menu">
+                    <button onclick="showEditProfile()">✏️ Edit Profile</button>
+                    <button onclick="showOrders()">📦 My Orders</button>
+                    <button onclick="showNotifications()">🔔 Notifications</button>
+                    <button onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+
+            <div id="login-form" style="display: none;">
+                <h2>Login</h2>
+                <form id="customer-login-form">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="password" id="login-password" placeholder="Password" required minlength="5">
+                    <button type="submit">Login</button>
+                    <button type="button" onclick="showForgotPassword()">Forgot Password?</button>
+                    <button type="button" onclick="backToAccount()">Cancel</button>
+                </form>
+            </div>
+
+            <div id="register-form" style="display: none;">
+                <h2>Register</h2>
+                <form id="customer-register-form">
+                    <input type="text" id="reg-username" placeholder="Username">
+                    <input type="email" id="reg-email" placeholder="Email" required>
+                    <input type="password" id="reg-password" placeholder="Password (min 5 characters)" required minlength="5">
+                    <input type="tel" id="reg-phone" placeholder="Phone (0712345678)">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms-accept" required>
+                        <label for="terms-accept">
+                            I have read and agree to <a href="#" onclick="showTerms()">Terms & Conditions</a>
+                        </label>
+                    </div>
+                    <button type="submit">Register</button>
+                    <button type="button" onclick="backToAccount()">Cancel</button>
+                </form>
+            </div>
+
+            <!-- Edit Profile Section -->
+            <div id="edit-profile-form" style="display: none;">
+                <h2>Edit Profile</h2>
+                <div class="profile-view">
+                    <div class="profile-field">
+                        <label for="edit-username">Username</label>
+                        <input type="text" id="edit-username" placeholder="Username">
+                    </div>
+                    <div class="profile-field">
+                        <label for="edit-email">Email</label>
+                        <input type="email" id="edit-email" placeholder="Email">
+                    </div>
+                    <div class="profile-field">
+                        <label for="edit-phone">Phone</label>
+                        <input type="tel" id="edit-phone" placeholder="Phone (0712345678)">
+                    </div>
+                    <div class="profile-field">
+                        <label for="edit-password">New Password (leave blank to keep current)</label>
+                        <input type="password" id="edit-password" placeholder="New Password">
+                    </div>
+                    <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+                    <button class="btn-secondary" onclick="backToAccount()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div id="notifications-view" style="display: none;">
+                <h2>Notifications</h2>
+                <div id="notifications-list">
+                    <p style="color: #888; text-align: center; padding: 20px;">No notifications yet</p>
+                </div>
+                <button class="btn-secondary" onclick="backToAccount()">Back</button>
+            </div>
+        </div>
+
+        <!-- My Orders Page -->
+        <div id="orders-page" class="page">
+            <h2>My Orders</h2>
+            <div id="orders-list" class="orders-list">
+                <p style="color: #888; text-align: center; padding: 20px;">Loading orders...</p>
+            </div>
+        </div>
+
+        <div id="cart-page" class="page">
+            <h2>Shopping Cart</h2>
+            <div id="cart-items"></div>
+            <div id="cart-summary"></div>
+            <button class="btn-primary" id="checkout-btn" onclick="showCheckout()">Proceed to Checkout</button>
+        </div>
+
+        <div id="checkout-page" class="page">
+            <h2>Checkout</h2>
+            <form id="checkout-form">
+                <input type="tel" id="checkout-phone" placeholder="Phone (0712345678)" required>
+
+                <div class="location-section">
+                    <h3>Delivery Location</h3>
+                    <div class="location-options">
+                        <label>
+                            <input type="radio" name="location-method" value="gps" checked>
+                            Use my current location
+                        </label>
+                        <label>
+                            <input type="radio" name="location-method" value="manual">
+                            Enter address manually
+                        </label>
+                    </div>
+                    <textarea id="delivery-address" placeholder="Delivery address" required></textarea>
+                    <button type="button" id="get-location-btn">📍 Get My Location</button>
+                </div>
+
+                <div class="payment-section" id="payment-section">
+                    <h3>Payment Method</h3>
+                    <div class="payment-options">
+                        <label>
+                            <input type="radio" name="payment-method" value="Pay Now" checked>
+                            Pay Now (M-Pesa)
+                        </label>
+                        <label id="pay-on-delivery-option" style="display: none;">
+                            <input type="radio" name="payment-method" value="Pay on Delivery">
+                            Pay on Delivery
+                        </label>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="checkout-summary"></div>
+                </div>
+
+                <button type="submit" class="btn-primary">Place Order</button>
+            </form>
+        </div>
+
+        <!-- OTP Verification Modal -->
+        <div id="otp-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>Verify OTP</h2>
+                <p style="color: #888; margin-bottom: 20px;">Enter the OTP sent to your phone</p>
+                <div class="otp-input-container">
+                    <input type="text" id="otp-input" class="otp-input" maxlength="6" placeholder="000000" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-primary" onclick="verifyOTP()">Verify</button>
+                    <button class="btn-secondary" onclick="closeOTPModal()">Cancel</button>
+                </div>
+                <p style="color: #888; margin-top: 15px; font-size: 14px;">
+                    Didn't receive the code? <a href="#" onclick="resendOTP()" style="color: #FF8C42;">Resend OTP</a>
+                </p>
+            </div>
+        </div>
+
+        <div id="order-status-page" class="page">
+            <h2>Order Status</h2>
+            <div id="order-status-content"></div>
+            <button id="track-order-btn" style="display: none;" onclick="trackOrder()">Track My Order</button>
+        </div>
+
+        <div id="tracking-page" class="page">
+            <h2>Track Delivery</h2>
+            <div class="tracking-container">
+                <iframe id="tracking-iframe" frameborder="0"></iframe>
+                <button onclick="reloadTracking()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div id="support-page" class="page">
+            <h2>Customer Support</h2>
+            <p>Need help? Contact our customer care team:</p>
+            <button class="btn-primary" id="call-support-btn">📞 Call Customer Care</button>
+            <div id="social-links"></div>
+        </div>
+
+        <div id="terms-page" class="page">
+            <h2>Terms & Conditions</h2>
+            <div id="terms-banner" style="display: none;"></div>
+            <div id="terms-content"></div>
+            <button id="download-previous-terms" style="display: none;">Download Previous Terms</button>
+        </div>
+
+        <div id="cart-bar" class="cart-bar" style="display: none;">
+            <span>0 items in cart</span>
+            <button onclick="showCart()">View Cart & Checkout</button>
+        </div>
+    </div>
+
+    <script src="/static/js/customer.js"></script>
+</body>
+</html>

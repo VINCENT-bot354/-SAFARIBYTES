@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - WEBSITE_URL=${WEBSITE_URL}
+      - PAYHERO_STK_PUSH_ENDPOINT=${PAYHERO_STK_PUSH_ENDPOINT}
+      - PAYHERO_BASIC_AUTH_TOKEN=${PAYHERO_BASIC_AUTH_TOKEN}
+      - PAYHERO_CHANNEL_ID=${PAYHERO_CHANNEL_ID}
+      - PAYHERO_PROVIDER=${PAYHERO_PROVIDER}
+      - PAYHERO_CALLBACK_PATH=${PAYHERO_CALLBACK_PATH}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_SENDER_EMAIL=${SENDGRID_SENDER_EMAIL}
+      - JWT_SECRET=${JWT_SECRET}
+      - PDF_STORAGE_BUCKET=${PDF_STORAGE_BUCKET}
+      - SESSION_SECRET=${SESSION_SECRET}
+    volumes:
+      - ./backups:/app/backups
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
