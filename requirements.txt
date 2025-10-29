@@ -11,7 +11,7 @@ sendgrid==6.11.0
 requests==2.31.0
 reportlab==4.0.7
 openpyxl==3.1.2
-pandas==2.1.4
+pandas==2.2.3
 Pillow==10.1.0
 gunicorn==21.2.0
 gevent==23.9.1
