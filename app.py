@@ -524,7 +524,7 @@ def staff_profile():
 @app.route('/api/orders', methods=['GET', 'POST'])
 def orders():
     if request.method == 'GET':
-        orders_list = Order.query.filter_by(is_archived=False).order_by(Order.created_at.desc()).all()
+        orders_list = Order.query.order_by(Order.created_at.desc()).all()
         return jsonify([{
             'id': o.id,
             'order_id': o.order_id,
