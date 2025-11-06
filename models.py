@@ -31,7 +31,7 @@ class SystemSettings(db.Model):
     splash_enabled = db.Column(db.Boolean, default=False)
     adverts_enabled = db.Column(db.Boolean, default=False)
     advert_frequency = db.Column(db.Integer, default=5)
-    min_delivery_fee = db.Column(db.Float, default=100.0)
+    min_delivery_fee = db.Column(db.Float, default=0.0)
     delivery_per_km_rate = db.Column(db.Float, default=50.0)
     convenience_fee = db.Column(db.Float, default=0.0)
     transaction_fee_percentage = db.Column(db.Float, default=0.0)
