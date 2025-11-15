@@ -679,7 +679,7 @@ async function handleCheckout(e) {
     });
     
     const productTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryFee = settings.min_delivery_fee || 100;
+    const deliveryFee = settings.min_delivery_fee || 0;
     const totalAmount = productTotal + deliveryFee;
     
     try {
